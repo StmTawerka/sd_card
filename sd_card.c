@@ -1,9 +1,6 @@
 #include "sd_card.h"
-
-/* CS = PB4 */
-#define SD_CS_LOW()   (PB_ODR &= ~(1 << 4))
-#define SD_CS_HIGH()  (PB_ODR |=  (1 << 4))
-
+#define SD_CS_LOW()   (PB_ODR &= ~(1 << 5))
+#define SD_CS_HIGH()  (PB_ODR |=  (1 << 5))
 static uint8_t SD_SPI(uint8_t data)
 {
     return SPI_TransmitReceiveByte(data);
