@@ -10,9 +10,9 @@ int main(void)
 
     CLK_CKDIVR = 0x00;
 
-    PB_DDR |= (1 << 4);
-    PB_CR1 |= (1 << 4);
-    PB_ODR |= (1 << 4);
+    PB_DDR |= (1 << 5);
+    PB_CR1 |= (1 << 5);
+    PB_ODR |= (1 << 5);
 
     SPI_Init();
 
