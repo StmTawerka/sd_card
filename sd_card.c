@@ -1,6 +1,8 @@
 #include "sd_card.h"
-#define SD_CS_LOW()   (PB_ODR &= ~(1 << 5))
-#define SD_CS_HIGH()  (PB_ODR |=  (1 << 5))
+
+/* CS = PB4 */
+#define SD_CS_LOW()   (PB_ODR &= ~(1 << 4))
+#define SD_CS_HIGH()  (PB_ODR |=  (1 << 4))
 
 static uint8_t SD_SPI(uint8_t data)
 {
@@ -16,7 +18,7 @@ SD_Status_t SD_SendCmd(SD_Handle_t *sd, uint8_t cmd, uint32_t arg)
     SD_SPI(arg >> 16);
     SD_SPI(arg >> 8);
     SD_SPI(arg);
-    SD_SPI(0x95); // CRC для CMD0
+    SD_SPI(0x95);
 
     for (uint8_t i = 0; i < SD_RESPONSE_SIZE; i++) {
         sd->response[i] = SD_SPI(0xFF);
@@ -81,5 +83,43 @@ SD_Status_t SD_ReadBlock(SD_Handle_t *sd, uint32_t block)
     SD_SPI(0xFF);
     SD_SPI(0xFF);
 
+    return SD_OK;
+}
+
+/* ===== ЗАПИСЬ БЛОКА ===== */
+SD_Status_t SD_WriteBlock(SD_Handle_t *sd, uint32_t block)
+{
+    if (!sd->initialized || sd->data == 0) {
+        return SD_NOT_INITIALIZED;
+    }
+
+    if (SD_SendCmd(sd, 0x58, block * 512) != SD_OK) {
+        return SD_ERROR;
+    }
+
+    SD_CS_LOW();
+
+    SD_SPI(0xFE); // data token
+
+    for (uint16_t i = 0; i < SD_BLOCK_SIZE; i++) {
+        SD_SPI(sd->data[i]);
+    }
+
+    /* CRC (можно любые значения) */
+    SD_SPI(0xFF);
+    SD_SPI(0xFF);
+
+    /* Data response */
+    uint8_t resp = SD_SPI(0xFF);
+    if ((resp & 0x1F) != 0x05) {
+        SD_CS_HIGH();
+        sd->error = SD_BAD_RESPONSE;
+        return SD_BAD_RESPONSE;
+    }
+
+    /* Ждём окончания busy */
+    while (SD_SPI(0xFF) == 0x00);
+
+    SD_CS_HIGH();
     return SD_OK;
 }
