@@ -271,3 +271,9 @@ void Init_CS(void){
     PE_CR2 |= (1 << 5);
     PE_ODR |= (1 << 5); 
 	}
+uint8_t SPI_TransmitReceiveByte(uint8_t data)
+{
+    SPI1_DR = data;
+    while (!(SPI1_SR & SPI_SR_RXNE));
+    return SPI1_DR;
+}
