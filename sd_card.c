@@ -1,6 +1,4 @@
 #include "sd_card.h"
-
-/* CS = PB4 */
 #define SD_CS_LOW()   (PB_ODR &= ~(1 << 5))
 #define SD_CS_HIGH()  (PB_ODR |=  (1 << 5))
 
