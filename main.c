@@ -8,9 +8,8 @@ int main(void)
 {
     SD_Handle_t sd;
 
-    CLK_CKDIVR = 0x00; // fCPU = 16 MHz
+    CLK_CKDIVR = 0x00;
 
-    /* CS как выход */
     PB_DDR |= (1 << 4);
     PB_CR1 |= (1 << 4);
     PB_ODR |= (1 << 4);
@@ -19,10 +18,14 @@ int main(void)
 
     sd.data = sd_buffer;
 
-    SD_Init(&sd);
-    SD_ReadBlock(&sd, 0);
-
-    while (1) {
-        /* основной цикл */
+    /* Заполняем данные */
+    for (uint16_t i = 0; i < 512; i++) {
+        sd_buffer[i] = i & 0xFF;
     }
+
+    SD_Init(&sd);
+    SD_WriteBlock(&sd, 1);
+    SD_ReadBlock(&sd, 1);
+
+    while (1);
 }
