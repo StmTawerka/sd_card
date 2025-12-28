@@ -1,26 +1,28 @@
 #include "main.h"
 #include "spi.h"
-#include "stdint.h"
-volatile uint8_t receive_1data[512] = {0};
-volatile uint8_t receive_data[512] = {0};
-volatile uint8_t transmit_data[512] = {0};
-/* test variables */
+#include "sd_card.h"
+
+static uint8_t sd_buffer[512];
+
 int main(void)
 {
-/*	int cnt=0;
-		for(cnt=0;cnt<512;cnt++){
-		transmit_data[cnt] = 512-cnt;}
-*/
-    /* Pin CS init 	*/
-    Init_CS();  
-		/*   SPI init		*/
-		SPI_init();
-		/* sd-card init */
-    power_on();          
-		SD_CARD_Init_1GB();
-		/* write/read data */
-		CARD_Read(receive_1data, 	0x00010000);
-	  CARD_Write(transmit_data, 0x00010000);
-		CARD_Read(receive_data, 	0x00010000);
-		while (1);
+    SD_Handle_t sd;
+
+    CLK_CKDIVR = 0x00; // fCPU = 16 MHz
+
+    /* CS как выход */
+    PB_DDR |= (1 << 4);
+    PB_CR1 |= (1 << 4);
+    PB_ODR |= (1 << 4);
+
+    SPI_Init();
+
+    sd.data = sd_buffer;
+
+    SD_Init(&sd);
+    SD_ReadBlock(&sd, 0);
+
+    while (1) {
+        /* основной цикл */
+    }
 }
